@@ -1,8 +1,8 @@
 import fileinput
 
-rows = [line for line in fileinput.input("input.txt")]
+rows = [line.rstrip() for line in fileinput.input("input.txt")]
 
-row_length = len(rows[0]) - 1
+row_length = len(rows[0])
 
 
 def count_trees(x_step, y_step):
