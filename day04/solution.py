@@ -2,16 +2,15 @@ import fileinput
 import re
 
 lines = [line.split() for line in fileinput.input("input.txt")]
-lines.append([])
 
 passports = []
 
 passport = dict()
-for line in lines:
+for i, line in enumerate(lines):
     for field in line:
         key, value = field.split(':')
         passport[key] = value
-    if not line:
+    if not line or i == len(lines)-1:
         passports.append(passport)
         passport = dict()
 
