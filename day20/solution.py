@@ -41,10 +41,12 @@ for edge, tile_ids in tiles_by_edge.items():
         for tile_id in tile_ids:
             matched_edges_by_tile[tile_id].append(edge)
 
+
 # Part 1
 
 def is_corner_piece(tile_id):
     return len(matched_edges_by_tile[tile_id]) == 4
+
 
 print(prod([tile_id for tile_id in matched_edges_by_tile.keys() if is_corner_piece(tile_id)]))
 
@@ -69,8 +71,8 @@ def find_path(unused_tiles, path):
     left_id, left_image = path[-1] if path and len(path) % square_side != 0 else (None, None)
     top_id, top_image = path[-square_side] if len(path) > square_side else (None, None)
 
-    next_is_corner = len(path) in (0, square_side-1, (square_side*(square_side-1)), (square_side*square_side - 1))
-    next_is_edge = not next_is_corner and (len(path) < square_side or len(path) > (square_side*(square_side-1))
+    next_is_corner = len(path) in (0, square_side - 1, (square_side * (square_side - 1)), (square_side * square_side - 1))
+    next_is_edge = not next_is_corner and (len(path) < square_side or len(path) > (square_side * (square_side - 1))
                                            or len(path) % square_side in (0, square_side - 1))
 
     if next_is_corner:
@@ -131,4 +133,59 @@ full_image = np.concatenate([np.concatenate([remove_borders(path[y * square_side
                                              for x in range(0, square_side)], 1)
                              for y in range(0, square_side)], 0)
 
-print(full_image)
+full_image_side = len(full_image)
+
+monster = np.array([
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0],
+    [1, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 1, 1],
+    [0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0]
+])
+
+monster_height = len(monster)
+monster_width = len(monster[0])
+
+inverted_monster = 1 - monster
+
+
+def is_monster(sub_image):
+    return np.array_equal(np.bitwise_and(monster, sub_image), monster)
+
+
+def find_monsters(image):
+    monster_positions = []
+
+    for x in range(0, full_image_side - monster_width):
+        for y in range(0, full_image_side - monster_height):
+            sub_image = image[y:y + monster_height, x:x + monster_width]
+
+            if is_monster(sub_image):
+                monster_positions.append((y, x))
+
+    return monster_positions
+
+
+def get_water_roughness(full_image):
+    for i in range(0, 4):
+        rotated_image = np.rot90(full_image, i)
+
+        for image in (rotated_image, np.fliplr(rotated_image), np.fliplr(rotated_image)):
+            monster_positions = find_monsters(image)
+
+            if monster_positions:
+                image = remove_monsters(image, monster_positions)
+                return np.count_nonzero(image == 1)
+
+
+def remove_monsters(image, monster_positions):
+    for y, x in monster_positions:
+        sub_image = image[y:y + monster_height, x:x + monster_width]
+        sub_image = np.bitwise_and(sub_image, inverted_monster)
+
+        for y2 in range(0, monster_height):
+            for x2 in range(0, monster_width):
+                image[y + y2][x + x2] = sub_image[y2][x2]
+
+    return image
+
+
+print(get_water_roughness(full_image))
