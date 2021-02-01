@@ -1,5 +1,5 @@
-# Advent of Code 2020
-My solutions for Advent of Code 2020, written in Python.
+# Advent of Code
+My solutions for Advent of Code, written in Python.
 
 
-https://adventofcode.com/2020
+https://adventofcode.com/
